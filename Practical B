@@ -1,0 +1,92 @@
+// File: Main.java
+
+import java.util.*;
+
+// ----- Entity Class -----
+class Student {
+    private int id;
+    private String name;
+    private String course;
+
+    public Student(int id, String name, String course) {
+        this.id = id;
+        this.name = name;
+        this.course = course;
+    }
+
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getCourse() { return course; }
+    public void setCourse(String course) { this.course = course; }
+
+    @Override
+    public String toString() {
+        return "Student [ID=" + id + ", Name=" + name + ", Course=" + course + "]";
+    }
+}
+
+// ----- Simulated Hibernate Session -----
+class FakeSession {
+    private Map<Integer, Student> database = new HashMap<>();
+
+    public void save(Student student) {
+        database.put(student.getId(), student);
+        System.out.println("Saved: " + student);
+    }
+
+    public Student get(int id) {
+        return database.get(id);
+    }
+
+    public void update(Student student) {
+        if (database.containsKey(student.getId())) {
+            database.put(student.getId(), student);
+            System.out.println("Updated: " + student);
+        } else {
+            System.out.println("Student not found!");
+        }
+    }
+
+    public void delete(int id) {
+        Student removed = database.remove(id);
+        if (removed != null) {
+            System.out.println("Deleted: " + removed);
+        } else {
+            System.out.println("No student found with ID " + id);
+        }
+    }
+
+    public void listAll() {
+        System.out.println("\nAll Students:");
+        for (Student s : database.values()) {
+            System.out.println(s);
+        }
+    }
+}
+
+// ----- Main Application -----
+public class Main {
+    public static void main(String[] args) {
+        FakeSession session = new FakeSession();
+
+        // CREATE
+        Student s1 = new Student(1, "Chhavi", "Java");
+        Student s2 = new Student(2, "Amit", "Python");
+        session.save(s1);
+        session.save(s2);
+
+        // READ
+        Student found = session.get(1);
+        System.out.println("\nFetched: " + found);
+
+        // UPDATE
+        found.setCourse("Spring Boot");
+        session.update(found);
+
+        // DELETE
+        session.delete(2);
+
+        // DISPLAY ALL
+        session.listAll();
+    }
+}
