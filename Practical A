@@ -1,0 +1,56 @@
+// File: Main.java
+
+// ----- Course Class -----
+class Course {
+    private String courseName;
+
+    public Course(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public void displayCourse() {
+        System.out.println("Enrolled Course: " + courseName);
+    }
+}
+
+// ----- Student Class (depends on Course) -----
+class Student {
+    private Course course;
+
+    // Constructor-based Dependency Injection
+    public Student(Course course) {
+        this.course = course;
+    }
+
+    public void showDetails() {
+        System.out.println("Student details:");
+        course.displayCourse();
+    }
+}
+
+// ----- Configuration Simulation -----
+class AppConfig {
+    // These act like @Bean methods in Spring
+    public Course course() {
+        return new Course("Spring Framework");
+    }
+
+    public Student student() {
+        // Inject Course into Student (manual DI)
+        return new Student(course());
+    }
+}
+
+// ----- Main Application -----
+public class Main {
+    public static void main(String[] args) {
+        // Initialize configuration (like Spring context)
+        AppConfig config = new AppConfig();
+
+        // Get the Student "bean"
+        Student student = config.student();
+
+        // Demonstrate dependency injection
+        student.showDetails();
+    }
+}
