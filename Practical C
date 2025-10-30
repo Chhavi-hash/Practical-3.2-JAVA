@@ -1,0 +1,109 @@
+// File: Main.java
+
+import java.util.*;
+
+// ---------- Entity Classes ----------
+class Account {
+    private int id;
+    private String name;
+    private double balance;
+
+    public Account(int id, String name, double balance) {
+        this.id = id;
+        this.name = name;
+        this.balance = balance;
+    }
+
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+
+    @Override
+    public String toString() {
+        return "Account [ID=" + id + ", Name=" + name + ", Balance=" + balance + "]";
+    }
+}
+
+// ---------- DAO Layer Simulation ----------
+class AccountDAO {
+    private Map<Integer, Account> accounts = new HashMap<>();
+
+    public void save(Account acc) {
+        accounts.put(acc.getId(), acc);
+    }
+
+    public Account get(int id) {
+        return accounts.get(id);
+    }
+
+    public void update(Account acc) {
+        accounts.put(acc.getId(), acc);
+    }
+
+    public void displayAll() {
+        accounts.values().forEach(System.out::println);
+    }
+}
+
+// ---------- Service Layer (Transactional Logic) ----------
+class BankingService {
+    private AccountDAO dao;
+
+    public BankingService(AccountDAO dao) {
+        this.dao = dao;
+    }
+
+    // Simulate @Transactional behavior
+    public void transferMoney(int fromId, int toId, double amount) {
+        System.out.println("\n--- Starting Transaction ---");
+        try {
+            Account from = dao.get(fromId);
+            Account to = dao.get(toId);
+
+            if (from == null || to == null)
+                throw new Exception("Account not found!");
+
+            if (from.getBalance() < amount)
+                throw new Exception("Insufficient balance!");
+
+            // Deduct and add
+            from.setBalance(from.getBalance() - amount);
+            to.setBalance(to.getBalance() + amount);
+
+            // Simulate saving changes (like Hibernate session.update)
+            dao.update(from);
+            dao.update(to);
+
+            System.out.println("Transaction Successful ✅");
+        } catch (Exception e) {
+            System.out.println("Transaction Failed ❌ : " + e.getMessage());
+            System.out.println("Rolling back changes...");
+        } finally {
+            System.out.println("--- Transaction Ended ---\n");
+        }
+    }
+}
+
+// ---------- Main Application ----------
+public class Main {
+    public static void main(String[] args) {
+        AccountDAO dao = new AccountDAO();
+        dao.save(new Account(1, "Chhavi", 5000));
+        dao.save(new Account(2, "Amit", 2000));
+
+        BankingService service = new BankingService(dao);
+
+        System.out.println("Before Transfer:");
+        dao.displayAll();
+
+        // Successful transaction
+        service.transferMoney(1, 2, 1500);
+
+        // Failed transaction (insufficient balance)
+        service.transferMoney(2, 1, 8000);
+
+        System.out.println("After Transfers:");
+        dao.displayAll();
+    }
+}
